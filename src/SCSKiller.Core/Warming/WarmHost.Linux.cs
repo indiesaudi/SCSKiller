@@ -6,7 +6,8 @@ namespace SCSKiller.Core.Warming;
 
 static partial class WarmHost
 {
-    public const string NotSteamError = "compiling on Linux works only for games Steam, Heroic, Lutris or Faugus runs with Wine or Proton",
+    public const string NotSteamError = "compiling on Linux works only for games Steam, Heroic, Lutris, Faugus or Xodus Nexus runs with Wine or Proton",
+        XodusNvidiaError = "compiling Xodus Nexus games isn't available yet on NVIDIA graphics",
         NotSteamVulkanError = "compiling Vulkan games on Linux works only for games Steam runs",
         InFlatpakError = "the Flatpak version of SCSKiller can't compile or record Flatpak Steam games yet",
         FlatpakVulkanError = "compiling Vulkan games from the Flatpak Steam isn't available yet",
@@ -20,7 +21,7 @@ static partial class WarmHost
         FlatpakMesaError = "compiling games of a Flatpak Heroic, Lutris or Faugus isn't available yet on Mesa's drivers: the Flatpak runs them on its own copy of Mesa";
 
     /// <summary>A game Steam runs, its own or a non-Steam game added to it (<see cref="SteamShortcuts"/>): its warm runs in
-    /// its Proton prefix (<see cref="ProtonWarmHost"/>). A Windows game of Heroic, Lutris or Faugus (<see cref="LauncherPrefix"/>): in
+    /// its Proton prefix (<see cref="ProtonWarmHost"/>). A Windows game of Heroic, Lutris, Faugus or Xodus Nexus (<see cref="LauncherPrefix"/>): in
     /// the launcher's prefix, on its Proton (as a non-Steam game's) or its Wine: on Mesa with the cache the game reads
     /// (<see cref="LauncherCache"/>), on NVIDIA in the game's own folder as a Steam game's, placed into the game's own file
     /// once it was seen reading one (<c>ScsKiller.SteamPlacer</c>). A game of the Flatpak Steam: in that Steam's sandbox, on NVIDIA under Proton alone,
@@ -74,7 +75,7 @@ static partial class WarmHost
         if (mesa && flatpakApp == null && cache?.LastOrDefault(v => v.Name == "MESA_SHADER_CACHE_DIR").Value is { } dir && Path.IsPathFullyQualified(dir)) Directory.CreateDirectory(dir);
         return new ProtonWarmHost(ctx, game, workDir, gameDir, dataDir, gpu, tools, log: log, cacheCap: cacheCap,
             wine: launched is { Proton: false } ? launched : null, cache: cache, mesa: mesa, flatpak: flatpak, flatpakApp: flatpakApp ?? ProtonLaunch.FlatpakApp,
-            flatpakRuntime: flatpakApp == null || launched!.Umu, launchGpu: launchGpu);
+            flatpakRuntime: flatpakApp == null || launched!.Umu, launchGpu: launched?.Run is { } run ? [.. launchGpu ?? [], .. run] : launchGpu);
     }
 
     /// <summary>A Flatpak Steam refusal as a Flatpak launcher's game gets it.</summary>
@@ -85,7 +86,7 @@ static partial class WarmHost
         FlatpakSteam(game, steamRoot, vulkan, mesa) is { } flatpak ? flatpak
         : vulkan ? !SteamRuns(game) ? NotSteamVulkanError : null
         : LauncherPrefix.Is(game) ? Launched(game, steamRoot ?? SteamSource.Root(), mesa, out var off) == null
-            ? off is FlatpakMesaError or InFlatpakLauncherError or FlatpakLauncherNoSystemdError ? off : $"not ready: {off}" : null
+            ? off is FlatpakMesaError or InFlatpakLauncherError or FlatpakLauncherNoSystemdError or XodusNvidiaError ? off : $"not ready: {off}" : null
         : !SteamRuns(game) ? NotSteamError : Context(game, steamRoot ?? SteamSource.Root(), out var why) == null ? $"not ready: {why}" : null;
 
     /// <summary>The Mesa cache variables a launcher's game runs with, which its warm takes: none, so both reach Mesa's default
@@ -106,6 +107,13 @@ static partial class WarmHost
     internal static (ProtonContext? Ctx, LauncherPrefix Prefix)? Launched(Game game, string steamRoot, bool mesa, out string? why)
     {
         if (LauncherPrefix.Of(game, out why) is not { } p) return null;
+        // NVIDIA's cache is placed where the game was seen reading it (ScsKiller.SteamPlacer), never yet in a folder the
+        // launcher names, as Xodus Nexus names one in its prefix
+        if (!mesa && XodusSource.Is(game.Id))
+        {
+            why = XodusNvidiaError;
+            return null;
+        }
         if (mesa && p.CacheHome != null
             && (why = !p.Proton ? FlatpakMesaError : LinuxStartup.InFlatpak ? InFlatpakLauncherError : NoSystemd.Value ? FlatpakLauncherNoSystemdError : null) != null)
             return null;

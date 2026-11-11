@@ -11,7 +11,7 @@ public sealed partial class ScsKiller
 {
     /// <summary>Steam's games and the non-Steam games added to it (ready once it runs them through Proton), the native Steam's
     /// or else the Flatpak or Snap Steam's, warmed in their Proton prefixes (<see cref="WarmHost.For"/>; the Flatpak Steam's
-    /// listed only), and Heroic's, Lutris's and Faugus's Windows games, warmed in their launcher's prefix, and the games added by hand in a Proton prefix: no
+    /// listed only), and Heroic's, Lutris's, Faugus's and Xodus Nexus's Windows games, warmed in their launcher's prefix, and the games added by hand in a Proton prefix: no
     /// recorder for a sandboxed Steam's games (<see cref="SteamSandboxSkip"/>), and no compile for the Flatpak Steam's where
     /// none of them can be (<see cref="SteamSandboxCompile"/>).</summary>
     public static partial ScsKiller CreateDefault(Func<Game, bool>? only)
@@ -25,7 +25,7 @@ public sealed partial class ScsKiller
             ? FlatpakGrant.CantGrant(grant) == null ? vulkan ? FlatpakVulkanSkipLine(a.Launcher) : FlatpakSkipLine(a.Launcher)
                 : vulkan ? FlatpakVulkanManualLine(grant, a.App, a.Launcher) : FlatpakManualLine(grant, a.App, a.Launcher) : null;
         // macOS: no game until its stores and a compile there exist
-        var k = new ScsKiller(OperatingSystem.IsMacOS() ? [] : [new SteamSource(steam), new SteamShortcutSource(steam), .. HeroicSource.Runners.Select(r => new HeroicSource(r, steamRoot: steam)), new LutrisSource(steamRoot: steam), new FaugusSource(steamRoot: steam), new ManualSource(new AppStore(AppStore.DefaultDir))],
+        var k = new ScsKiller(OperatingSystem.IsMacOS() ? [] : [new SteamSource(steam), new SteamShortcutSource(steam), .. HeroicSource.Runners.Select(r => new HeroicSource(r, steamRoot: steam)), new LutrisSource(steamRoot: steam), new FaugusSource(steamRoot: steam), new XodusSource(steamRoot: steam), new ManualSource(new AppStore(AppStore.DefaultDir))],
             vendor, DefaultReaders(), new Planner(Path.Combine(AppStore.DefaultDir, "packs"), SharedPackDir(AppStore.DefaultDir, vendor.Vendor)), new Warmer(vendor) { SteamRoot = steam },
             AppStore.DefaultDir, NativeTools.Find("d3d12.dll"), only) { Adapters = GpuBackends.Adapters, AgsDll = NativeTools.Find("scskiller_ags.dll"), SteamRoot = steam };
         k.RedetectGpu();   // DriverId from Vulkan before anything compares it

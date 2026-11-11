@@ -54,9 +54,9 @@ public sealed record AppPlatform
     public static AppPlatform Linux(Func<bool> steam) => new()
     {
         // the flags left off are features Linux doesn't have yet, each turned on once it does
-        Name = "Linux", Stores = ["Steam", "Heroic", "Lutris", "Faugus"], UpdatingStores = "Steam", SystemTheme = "Use system setting", Runtime = "Proton", Tray = true, StartAtSignIn = true, DriverUpdateModes = true,
-        NoGamesNote = () => steam() ? "SCSKiller lists the Windows games you installed with Steam, Heroic, Lutris or Faugus, and the ones you added to Steam with Proton."
-            : "SCSKiller lists the Windows games of Steam, Heroic, Lutris and Faugus.",
+        Name = "Linux", Stores = ["Steam", "Heroic", "Lutris", "Faugus", "Xodus Nexus"], UpdatingStores = "Steam", SystemTheme = "Use system setting", Runtime = "Proton", Tray = true, StartAtSignIn = true, DriverUpdateModes = true,
+        NoGamesNote = () => steam() ? "SCSKiller lists the Windows games you installed with Steam, Heroic, Lutris, Faugus or Xodus Nexus, and the ones you added to Steam with Proton."
+            : "SCSKiller lists the Windows games of Steam, Heroic, Lutris, Faugus and Xodus Nexus.",
         // no input idle time: the background compile starts at once and pauses only for a game
         IdleRebuildNote = "Rebuilds in the background and pauses while a game runs",
         SteamCacheNote = true, RecordAntiCheatGames = true, AddGames = true,

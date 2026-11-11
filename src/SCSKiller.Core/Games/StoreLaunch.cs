@@ -10,7 +10,7 @@ namespace SCSKiller.Core.Games;
 /// added to it by its 64-bit game id), Epic and Ubisoft Connect by their URI, Xbox by the package's app id, GOG through
 /// GOG Galaxy's run command, PURPLE through PurpleLauncher.exe --game-id &lt;code&gt;. The EA app's own shortcuts run the game exe and discovery has no EA offer id; Battle.net and Riot Client games count as anti-cheat: none of these has a launch. A game the
 /// user added has no store: its exe runs from its own folder, with no arguments, on Windows alone. Off Windows Steam's URI opens through xdg-open, on
-/// Linux Heroic's (its Epic, GOG and Amazon games and the ones added to it) and Lutris's too, Faugus's by its launcher's --game, and PURPLE has no launch.</summary>
+/// Linux Heroic's (its Epic, GOG and Amazon games and the ones added to it) and Lutris's too, Faugus's by its launcher's --game, Xodus Nexus's by its launch-game script, and PURPLE has no launch.</summary>
 public static class StoreLaunch
 {
     /// <summary>The game's store has a launch; no file read beyond whether GOG Galaxy or PURPLE is installed and Faugus's games.json and launcher.</summary>
@@ -21,6 +21,7 @@ public static class StoreLaunch
         "amazon" or "heroic" or "lutris" => OperatingSystem.IsLinux(),
         // its launch runs a host program, which a Flatpak SCSKiller's sandbox doesn't have
         "faugus" => OperatingSystem.IsLinux() && App.Installation.ThisElsewhere?.Kind != App.InstallKind.Flatpak && FaugusSource.Launch(g) != null,
+        "xodus" => OperatingSystem.IsLinux() && App.Installation.ThisElsewhere?.Kind != App.InstallKind.Flatpak && XodusSource.Launch(g) != null,
         "purple" => OperatingSystem.IsWindows() && PurpleSource.LauncherExe() != null,
         _ => false,
     };
@@ -42,6 +43,7 @@ public static class StoreLaunch
             return new ProcessStartInfo("xdg-open", [$"heroic://launch?appName={Uri.EscapeDataString(id)}&runner={HeroicSource.RunnerName(runner)}"]);
         if (OperatingSystem.IsLinux() && LutrisSource.Is(g.Id)) return new ProcessStartInfo("xdg-open", [$"lutris:rungameid/{id}"]);
         if (OperatingSystem.IsLinux() && FaugusSource.Is(g.Id)) return FaugusSource.Launch(g);
+        if (OperatingSystem.IsLinux() && XodusSource.Is(g.Id)) return XodusSource.Launch(g);
         if (!OperatingSystem.IsWindows() && Prefix(g) == "steam") return SteamSource.AppId(g.Id) is { } steam ? new ProcessStartInfo("xdg-open", [$"steam://rungameid/{steam}"]) : null;
         var uri = Prefix(g) switch
         {

@@ -74,7 +74,8 @@ public sealed record ProtonContext(uint AppId, string SteamRoot, string CompatDa
     /// the one that last ran the prefix, in the Steam Linux Runtime Steam has for it, else umu's (Heroic's, Lutris's and Faugus's way of
     /// running Proton). App id 0, as umu runs it. The reasons say to start it from that launcher.</summary>
     /// <param name="sandboxed">the warm runs in the launcher's Flatpak: its prefix's Steam folder is the Flatpak's, and with
-    /// <see cref="LauncherPrefix.Umu"/> off it runs Proton's script without a runtime (none is looked for, Runtime "")</param>
+    /// <see cref="LauncherPrefix.Umu"/> off it runs Proton's script without a runtime (none is looked for, Runtime ""), as it
+    /// does on the host for a launcher that runs it so (<see cref="LauncherPrefix.Host"/>)</param>
     public static ProtonContext? For(LauncherPrefix p, string install, string steamRoot, out string? why, IEnumerable<string>? toolFolders = null, bool sandboxed = false)
     {
         why = null;
@@ -84,7 +85,7 @@ public sealed record ProtonContext(uint AppId, string SteamRoot, string CompatDa
             return null;
         }
         ProtonContext? ctx = null;
-        try { ctx = In(0, steamRoot, p.Prefix, Path.TrimEndingDirectorySeparator(install), null, null, toolFolders, out why, umu: true, noRuntime: sandboxed && !p.Umu, sandboxed: sandboxed); }
+        try { ctx = In(0, p.SteamRoot ?? steamRoot, p.Prefix, Path.TrimEndingDirectorySeparator(install), null, null, toolFolders, out why, umu: true, noRuntime: sandboxed && !p.Umu || p.Host, sandboxed: sandboxed); }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException) { why = $"its prefix's files couldn't be read: {e.Message}"; }
         if (ctx != null && !Same(ctx.Proton, p.Bin)) (ctx, why) = (null, $"{p.Launcher} runs it on {p.Bin} but its prefix last ran on {ctx.Proton}");
         why = why?.Replace("from Steam", "from " + p.Launcher, StringComparison.Ordinal);

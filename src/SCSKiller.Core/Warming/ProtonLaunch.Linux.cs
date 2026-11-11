@@ -53,7 +53,9 @@ static class ProtonLaunch
     /// (nice -n adds to <paramref name="coreNice"/>, the starting thread's own) and for idle ionice's idle class.</summary>
     public static List<string> Command(ProtonTools tools, WarmPriority priority, int coreNice, string unit, string log, string runtime, string proton,
         string warmExe, IReadOnlyList<string> args) =>
-        [.. Launcher(tools, priority, coreNice, unit, log), Path.Combine(runtime, SteamSource.EntryPoint), "--verb=run", "--", Path.Combine(proton, "proton"), "run", warmExe, .. args];
+        runtime.Length == 0   // no runtime: Proton's script on the host, as the launcher runs it (LauncherPrefix.Host)
+            ? [.. Launcher(tools, priority, coreNice, unit, log), Path.Combine(proton, "proton"), "run", warmExe, .. args]
+            : [.. Launcher(tools, priority, coreNice, unit, log), Path.Combine(runtime, SteamSource.EntryPoint), "--verb=run", "--", Path.Combine(proton, "proton"), "run", warmExe, .. args];
 
     /// <summary>The command line as sh would read it, for the log: an argument with a space, a quote or nothing in single quotes.</summary>
     public static string ShellLine(IEnumerable<string> argv) =>

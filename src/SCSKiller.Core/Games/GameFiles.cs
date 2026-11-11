@@ -490,7 +490,7 @@ public static partial class GameFiles
     internal static partial string? SystemFolder(Game game);
 
     /// <summary>The Wine prefix the game runs in: a Steam game's or non-Steam game's Proton prefix, a launcher's (Heroic,
-    /// Lutris, Faugus); null on Windows or when none is known. <paramref name="steamRoot"/>: Steam's folder (default: Steam's own).</summary>
+    /// Lutris, Faugus, Xodus Nexus); null on Windows or when none is known. <paramref name="steamRoot"/>: Steam's folder (default: Steam's own).</summary>
     internal static partial string? PrefixOf(Game game, string? steamRoot = null);
 
     /// <summary>Proton made the prefix <paramref name="pfx"/>: its system.reg is there, as a compile under Proton needs.</summary>
@@ -1021,7 +1021,7 @@ public static partial class GameFiles
                     at?.Invoke(d);
                     return kind;
                 }
-            if (game.Store == Store.Manual || SteamShortcuts.Is(game.Id) || LutrisSource.Is(game.Id) || FaugusSource.Is(game.Id) || HeroicSource.Sideload(game.Id))
+            if (game.Store == Store.Manual || SteamShortcuts.Is(game.Id) || LutrisSource.Is(game.Id) || FaugusSource.Is(game.Id) || XodusSource.Is(game.Id) || HeroicSource.Sideload(game.Id))
                 foreach (var (d, self) in LinkedAncestors(install))
                 {
                     if (self) continue;   // the install's own entries: walked above

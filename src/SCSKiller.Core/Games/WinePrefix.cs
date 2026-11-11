@@ -123,19 +123,23 @@ static class WineReg
 /// Flatpak's), null for the user's own. <paramref name="Env"/>: the variables the launcher's settings give the game, a later
 /// one of a name over an earlier. <paramref name="Umu"/>: a Proton build runs under umu's Steam Linux Runtime, else the
 /// launcher runs its proton script itself (Heroic without umu). <paramref name="Args"/>: the arguments the launcher's settings
-/// give the game's exe (a -dx11 or -vulkan), as Steam's launch options do (<see cref="Unreal.UnrealRhi.LaunchOptions(Game)"/>).</summary>
+/// give the game's exe (a -dx11 or -vulkan), as Steam's launch options do (<see cref="Unreal.UnrealRhi.LaunchOptions(Game)"/>).
+/// <paramref name="Host"/>: the launcher runs its Proton's script on the host, in no Steam Linux Runtime (Xodus Nexus), as
+/// a warm then does, with <paramref name="SteamRoot"/> its Steam folder (null: Steam's) and <paramref name="Run"/> the
+/// variables it starts that script with that pick its route, which a warm takes too.</summary>
 public sealed record LauncherPrefix(string Launcher, string Prefix, string Bin, bool Proton, string? CacheHome, IReadOnlyList<(string Name, string Value)>? Env = null,
-    bool Umu = true, string? Args = null)
+    bool Umu = true, string? Args = null, bool Host = false, string? SteamRoot = null, IReadOnlyList<(string Name, string Value)>? Run = null)
 {
-    /// <summary>A game Heroic, Lutris or Faugus lists, or one added by hand: Linux's alone, where epic: and gog: ids are Heroic's.</summary>
-    public static bool Is(Game g) => OperatingSystem.IsLinux() && (g.Store == Store.Manual || HeroicSource.RunnerOf(g.Id) != null || LutrisSource.Is(g.Id) || FaugusSource.Is(g.Id));
+    /// <summary>A game Heroic, Lutris, Faugus or Xodus Nexus lists, or one added by hand: Linux's alone, where epic: and gog: ids are Heroic's.</summary>
+    public static bool Is(Game g) => OperatingSystem.IsLinux() && (g.Store == Store.Manual || HeroicSource.RunnerOf(g.Id) != null || LutrisSource.Is(g.Id) || FaugusSource.Is(g.Id)
+        || XodusSource.Is(g.Id));
 
     /// <summary>The prefix the game's launcher runs it in, read now; null with the reason when it can't be told.</summary>
     public static LauncherPrefix? Of(Game g, out string? why)
     {
         if (Is(g)) return g.Store == Store.Manual ? Added(g, out why) : HeroicSource.RunnerOf(g.Id) != null ? HeroicSource.PrefixOf(g, out why)
-            : FaugusSource.Is(g.Id) ? FaugusSource.PrefixOf(g, out why) : LutrisSource.PrefixOf(g, out why);
-        why = "it isn't a game of Heroic, Lutris or Faugus";
+            : FaugusSource.Is(g.Id) ? FaugusSource.PrefixOf(g, out why) : XodusSource.Is(g.Id) ? XodusSource.PrefixOf(g, out why) : LutrisSource.PrefixOf(g, out why);
+        why = "it isn't a game of Heroic, Lutris, Faugus or Xodus Nexus";
         return null;
     }
 
