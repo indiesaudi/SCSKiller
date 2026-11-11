@@ -152,10 +152,12 @@ static class ProtonLaunch
     /// <summary>The display variables a graphical session gives the systemd user manager, for a warm started without one (the
     /// idle and driver-update compiles' timer, a compile over SSH): Wine with no display can deadlock at its start (Proton 11's
     /// win32u: its Vulkan init loads the display driver, whose GPU list waits on that same init, measured on ARM64 Proton),
-    /// and the game always runs with the session's. Added only when <paramref name="env"/> has neither DISPLAY nor
-    /// WAYLAND_DISPLAY, and only what the session names; nothing without a graphical session.</summary>
+    /// and the game always runs with the session's. Added only on arm64 (where the deadlock was measured; elsewhere the warm
+    /// keeps the environment it had), when <paramref name="env"/> has neither DISPLAY nor WAYLAND_DISPLAY, and only what the
+    /// session names; nothing without a graphical session.</summary>
     internal static void WithSessionDisplay(Dictionary<string, string> env)
     {
+        if (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture != System.Runtime.InteropServices.Architecture.Arm64) return;
         if (env.ContainsKey("DISPLAY") || env.ContainsKey("WAYLAND_DISPLAY")) return;
         foreach (var (k, v) in SessionDisplay.Value)
             if (k is "DISPLAY" or "WAYLAND_DISPLAY" or "XAUTHORITY" or "XDG_SESSION_TYPE" || !env.ContainsKey(k)) env[k] = v;
