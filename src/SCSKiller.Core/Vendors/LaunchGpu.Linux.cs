@@ -128,8 +128,9 @@ public static class LaunchGpu
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { manifests = [path]; }
         foreach (var m in manifests)
         {
-            // the loader skips a manifest that isn't there (Armada lists the FEX guest's x86 Turnip manifests on the host too)
-            if (!File.Exists(m)) continue;
+            // the loader skips a manifest that isn't there: on arm64 Armada lists the FEX guest's x86 Turnip manifests on the
+            // host too (elsewhere one still leaves the driver unknown, as before)
+            if (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64 && !File.Exists(m)) continue;
             string? library = null;
             try
             {

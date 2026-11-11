@@ -31,9 +31,10 @@ public static partial class GpuBackends
     }
 
     /// <summary>The adapters SCSKiller compiles for (NVIDIA, AMD, Intel with <paramref name="intel"/> where it takes
-    /// <see cref="IntelSwitch"/>, and Qualcomm where this OS has a backend for its driver, Linux's Turnip): what a pick is offered from.</summary>
+    /// <see cref="IntelSwitch"/>, and on Linux Qualcomm where Turnip runs it): what a pick is offered from.</summary>
     public static IEnumerable<DxgiAdapter> Usable(IReadOnlyList<DxgiAdapter> adapters, bool intel = false) =>
-        adapters.Where(a => (a.Gpu.Vendor is GpuVendor.Nvidia or GpuVendor.Amd or GpuVendor.Qualcomm || (intel || !IntelSwitch) && a.Gpu.Vendor == GpuVendor.Intel) && HasBackend(a, intel));
+        adapters.Where(a => (a.Gpu.Vendor is GpuVendor.Nvidia or GpuVendor.Amd || a.Gpu.Vendor == GpuVendor.Qualcomm && OperatingSystem.IsLinux()
+            || (intel || !IntelSwitch) && a.Gpu.Vendor == GpuVendor.Intel) && HasBackend(a, intel));
 
     /// <summary>The vendor whose own driver compiles: none under Mesa, which has no AGS, DxcCache, Aftermath, NVAPI or
     /// DLSS, whatever GPU it runs.</summary>
