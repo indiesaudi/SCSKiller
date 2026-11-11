@@ -9,6 +9,8 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="SCSKiller.Tests" />
+    <!-- tools/arm64-checks: reads Proton scripts as a compile does (ProtonScript.Check) -->
+    <InternalsVisibleTo Include="arm64-checks" />
   </ItemGroup>
 
   <!-- A platform's own code: *.Windows.cs for the Windows build, *.Linux.cs for the net10.0 one, *.Mac.cs for what that

@@ -5,18 +5,22 @@
 #      GPU's own and lavapipe, as the games' loader would load them
 #   3. arm64-checks: the arm64 update feeds, and the arm64 Oodle build downloaded and loaded with this machine's glibc
 #   4. the AppImage: extracted (no FUSE needed) and run as the CLI: --version, then a game scan in a throwaway data folder
-#   5. what the next steps depend on (report only): FUSE for a normal AppImage start, Steam, Proton, FEX, Box64
+#   5. every ARM64 Proton installed, read as a compile reads it (its ARM64 branch, its default prefix, prefix_info)
+#   6. Turnip's cache, measured: a Steam game's recorded pipelines (fozpipelinesv6) replayed twice on the game's own Turnip
+#      build (Armada's per-game pick) into a scratch cache in /tmp, cold then warm; nothing is launched
+#   7. what the next steps depend on (report only): FUSE for a normal AppImage start, Steam, Proton, FEX, Box64
 # Nothing outside a temp folder is written; your own SCSKiller data folder isn't read. The report is saved beside this
 # script (device-report-<time>.txt): send it back.
-# Usage: ./device-check.sh [--no-scan] [--no-network]
+# Usage: ./device-check.sh [--no-scan] [--no-network] [--no-replay]
 set -uo pipefail
 here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-scan=1 network=1
+scan=1 network=1 replay=1
 for a in "$@"; do
     case $a in
         --no-scan) scan= ;;
         --no-network) network= ;;
-        *) echo "usage: $0 [--no-scan] [--no-network]" >&2; exit 2 ;;
+        --no-replay) replay= ;;
+        *) echo "usage: $0 [--no-scan] [--no-network] [--no-replay]" >&2; exit 2 ;;
     esac
 done
 report=$here/device-report-$(date +%Y%m%d-%H%M%S).txt
@@ -47,6 +51,11 @@ if [[ -n $glibc ]]; then
 fi
 info "memory: $(awk '/MemTotal/ {printf "%.1f GB", $2 / 1048576}' /proc/meminfo), CPUs: $(nproc)"
 if [[ -r /proc/device-tree/model ]]; then info "board: $(tr -d '\0' </proc/device-tree/model)"; fi
+if [[ -x /usr/libexec/armada/device-env ]]; then
+    ( eval "$(/usr/libexec/armada/device-env 2>/dev/null)"
+      info "Armada device: ${ARMADA_DEVICE_NAME:-?} (${ARMADA_DEVICE_ID:-?}), SoC ${ARMADA_SOC_CLASS:-?}, Proton defaults ${ARMADA_PROTON_DEFAULTS:-?}" )
+    [[ -r /usr/lib/armada/version ]] && info "Armada version: $(head -1 /usr/lib/armada/version)"
+fi
 
 section "2. Vulkan layer and warm (selftest_linux vkrec)"
 st=$here/selftest/selftest_linux
@@ -132,7 +141,61 @@ else
     fi
 fi
 
-section "5. for the next steps (report only)"
+steam_root=$(readlink -f "$HOME/.steam/root" 2>/dev/null || echo "$HOME/.local/share/Steam")
+checks=$here/arm64-checks/arm64-checks
+
+section "5. ARM64 Protons, read as a compile reads them"
+protons=()
+for p in "$steam_root"/steamapps/common/* "$steam_root"/compatibilitytools.d/* /usr/share/steam/compatibilitytools.d/*; do
+    [[ -f $p/proton && -d $p/files/bin-arm64 ]] && protons+=("$p")
+done
+if ((${#protons[@]} == 0)); then info "no ARM64 Proton installed"
+elif [[ ! -x $checks ]]; then bad "no arm64-checks in the bundle"
+elif SCSKILLER_DATA_DIR=$work/checks "$checks" --proton "${protons[@]}" | sed 's/^/      /'; then ok "every ARM64 Proton (${#protons[@]}) reads as a compile needs"
+else bad "an ARM64 Proton reads otherwise than a compile needs (above)"; fi
+
+section "6. Turnip's cache, measured (a game's Steam recording, replayed cold then warm)"
+if [[ -z $replay ]]; then info "skipped (--no-replay)"
+elif [[ ! -x $here/selftest/fossilize-replay ]]; then bad "no selftest/fossilize-replay in the bundle"
+else
+    # Steam's recordings, smallest of at least 2 MB first; a delta (an app run's) only names shader modules of the archive
+    # beside it and replays nothing alone, so the first that replays pipelines is measured
+    mapfile -t picks < <(find "$steam_root"/steamapps/shadercache/*/fozpipelinesv6 -name '*.foz' -size +2M -printf '%s %p\n' 2>/dev/null | sort -n | cut -d' ' -f2-)
+    took() { grep -E 'Playing back [0-9]+ (graphics|compute) pipelines took' "$1" | awk '{s += $(NF-3)} END {printf "%.1f", s}'; }
+    count() { grep -E '^Fossilize INFO: +(graphics|compute) pipelines:' "$1" | awk '{s += $NF} END {print s + 0}'; }
+    replay() {   # replay <run> <recording> <driver files>: into $r/cache, its exit code in $r/<run>.code
+        ( [[ -n $3 ]] && export VK_DRIVER_FILES=$3 VK_ICD_FILENAMES=$3
+          MESA_SHADER_CACHE_DIR=$r/cache MESA_DISK_CACHE_SINGLE_FILE=1 timeout 900 "$here/selftest/fossilize-replay" --num-threads "$(nproc)" "$2" >"$r/$1.log" 2>&1 )
+        echo "$?" >"$r/$1.code"
+    }
+    measured=
+    for pick in "${picks[@]:0:6}"; do
+        app=$(sed -E 's|.*/shadercache/([0-9]+)/.*|\1|' <<<"$pick")
+        name=$(grep -h '"name"' "$steam_root"/steamapps/appmanifest_"$app".acf 2>/dev/null | head -1 | sed -E 's/.*"name"[[:space:]]+"([^"]*)".*/\1/')
+        drv=$("$checks" --armada "$app" 2>/dev/null | grep -o 'VK_DRIVER_FILES=[^ ]*' | cut -d= -f2-)
+        r=$work/replay && rm -rf "$r" && mkdir -p "$r/cache"
+        cp "$pick" "$r/rec.foz"
+        replay cold "$r/rec.foz" "$drv"
+        n=$(count "$r/cold.log")
+        if ((n == 0)); then info "skip $(basename "$pick") of ${name:-$app}: replays no pipeline alone (a delta of Steam's)"; continue; fi
+        info "game: ${name:-?} ($app), $(basename "$pick") $(du -h "$pick" | cut -f1), Turnip: ${drv:-the system one}"
+        replay warm "$r/rec.foz" "$drv"
+        cold=$(took "$r/cold.log") warm=$(took "$r/warm.log")
+        info "cold: $n pipelines, ${cold} s of compile time; warm: ${warm} s; cache $(du -sh "$r/cache" | cut -f1)"
+        if [[ $(cat "$r/cold.code") != 0 ]]; then bad "the cold replay failed or ran out of time (exit $(cat "$r/cold.code"))"; tail -5 "$r/cold.log" | sed 's/^/      /'
+        elif [[ -z $(find "$r/cache" -name foz_cache.foz -size +0) ]]; then bad "Turnip wrote no cache: its disk cache is off for this driver build"
+        elif awk -v c="$cold" -v w="$warm" 'BEGIN { exit !(c > 0 && w * 5 < c) }'; then ok "Turnip's cache works here: warm is $(awk -v c="$cold" -v w="$warm" 'BEGIN { printf "%.0f", (w > 0 ? c / w : 0) }')x faster"
+        else bad "the warm replay wasn't much faster (cold ${cold} s, warm ${warm} s): the cache isn't being read"; fi
+        measured=1
+        break
+    done
+    if [[ -z $measured ]]; then
+        if ((${#picks[@]} == 0)); then info "no Steam pipeline recording (fozpipelinesv6) yet: play a Proton game once, then run this again"
+        else bad "none of the first $(( ${#picks[@]} < 6 ? ${#picks[@]} : 6 )) Steam recordings replayed a pipeline"; fi
+    fi
+fi
+
+section "7. for the next steps (report only)"
 if command -v fusermount3 >/dev/null || command -v fusermount >/dev/null; then info "FUSE: present (the AppImage starts with a double-click)"
 else info "FUSE: missing (start the AppImage with --appimage-extract-and-run, or install fuse3)"; fi
 info "session: ${XDG_SESSION_TYPE:-?}, desktop: ${XDG_CURRENT_DESKTOP:-?}, display: ${WAYLAND_DISPLAY:-}${DISPLAY:-}"

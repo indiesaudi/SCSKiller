@@ -5,6 +5,7 @@ using SCSKiller.Core.App;
 
 // The arm64 Linux build's checks. Usage: arm64-checks [--feed releases.<c>-linux-arm64.json] [--no-network]
 //   or arm64-checks --armada <appid>...: the variables Armada's armada-game-launch adds for each Steam app (ArmadaLaunch), only
+//   or arm64-checks --proton <Proton folder>...: each Proton read as a compile reads it (ProtonScript.Check); exit code: failures
 //   feeds   UpdateChannels / UpdateFeeds: the arm64 build follows its own -linux-arm64 feeds and takes only its own packages
 //   codecs  Codecs: the arm64 Oodle build is pinned, downloaded and loaded (dlopen against this machine's glibc); no zlib-ng
 // Set SCSKILLER_DATA_DIR to a scratch folder: the codecs are downloaded into its codecs/ folder.
@@ -20,13 +21,31 @@ void Check(string what, bool ok, string? detail = null)
 string? feedFile = null;
 var network = true;
 List<uint>? armada = null;
+List<string>? protons = null;
 for (var i = 0; i < args.Length; i++)
 {
     if (args[i] == "--feed" && i + 1 < args.Length) feedFile = args[++i];
     else if (args[i] == "--no-network") network = false;
     else if (args[i] == "--armada") armada = [];
+    else if (args[i] == "--proton") protons = [];
+    else if (protons != null) protons.Add(args[i]);
     else if (armada != null && uint.TryParse(args[i], out var app)) armada.Add(app);
     else { Console.Error.WriteLine($"unknown argument: {args[i]}"); return 100; }
+}
+if (protons != null)
+{
+    var steam = SCSKiller.Core.Games.SteamSource.Root();
+    foreach (var dir in protons)
+    {
+        var name = $"{Path.GetFileName(Path.TrimEndingDirectorySeparator(dir))} ({(File.Exists(Path.Combine(dir, "version")) ? File.ReadAllText(Path.Combine(dir, "version")).Trim() : "no version file")})";
+        if (SCSKiller.Core.Games.ProtonScript.Read(dir) is not { } script) { Check($"{name}: proton script readable", false); continue; }
+        if (SCSKiller.Core.Games.SteamSource.PrefixVersion(dir) is not { } version) { Check($"{name}: CURRENT_PREFIX_VERSION", false); continue; }
+        var c = script.Check(version, steam);
+        Check($"{name}: runs its ARM64 branch here", c.Arm64, c.DefaultPrefix);
+        Check($"{name}: default prefix there", c.Exists, c.DefaultPrefix);
+        Check($"{name}: every prefix_info line computable", c.Unknown == null, c.Unknown);
+    }
+    return failed;
 }
 if (armada != null)
 {
