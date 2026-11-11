@@ -11,7 +11,7 @@ set -eu
 arch=${SCSK_ARCH:-$(uname -m)}
 case $arch in
   x86_64 | amd64)
-    arch=x86_64 platform=linux/amd64 dir=build-linux
+    arch=x86_64 platform= dir=build-linux
     image=registry.gitlab.steamos.cloud/steamrt/sniper/sdk@sha256:9ae8083ee9ae6298361a62f289e62f0a2b0779d23fc8c276304157f0c06010c5 ;;
   aarch64 | arm64)
     arch=aarch64 platform=linux/arm64 dir=build-linux-arm64
@@ -24,7 +24,7 @@ out=${1:-$src/proxy/$dir}
 mkdir -p "$out"
 out=$(cd "$out" && pwd)
 engine=$(command -v podman || command -v docker)
-"$engine" run --rm --platform "$platform" -e SCSK_VERSION="${SCSK_VERSION:-0.0.0-internal.0}" -e SCSK_MAKE_JOBS="${SCSK_MAKE_JOBS:-}" -v "$src:/src:ro" -v "$out:/build" -w /build "$image" \
+"$engine" run --rm ${platform:+--platform "$platform"} -e SCSK_VERSION="${SCSK_VERSION:-0.0.0-internal.0}" -e SCSK_MAKE_JOBS="${SCSK_MAKE_JOBS:-}" -v "$src:/src:ro" -v "$out:/build" -w /build "$image" \
   sh -c 'CC=gcc-14 CXX=g++-14 cmake -S /src/proxy -B . -DCMAKE_BUILD_TYPE=Release -DSCSK_VERSION="$SCSK_VERSION" && make -j"${SCSK_MAKE_JOBS:-$(nproc)}" VkLayer_scskiller selftest_linux scskiller_warm fossilize-replay'
 for f in libVkLayer_scskiller.so scskiller_warm fossilize-replay; do
   dump=$(objdump -T "$out/$f")

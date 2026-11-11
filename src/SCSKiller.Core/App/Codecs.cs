@@ -18,9 +18,9 @@ public static partial class Codecs
     static readonly Lock Gate = new();
 
     /// <summary>The pinned x86-64 Oodle build runs AVX2, BMI2 and MOVBE code with no CPU check, which kills the process on a
-    /// CPU without them; an arm64 process takes the arm64 build where one is pinned (Linux). Without it CUE4Parse decodes
-    /// Oodle data in managed code.</summary>
-    public static bool NativeOodle => RuntimeInformation.ProcessArchitecture == Architecture.Arm64
+    /// CPU without them; an arm64 Linux process takes the arm64 build pinned for it. Without it CUE4Parse decodes Oodle data
+    /// in managed code.</summary>
+    public static bool NativeOodle => OperatingSystem.IsLinux() && RuntimeInformation.ProcessArchitecture == Architecture.Arm64
         ? Pinned.ContainsKey(OodleHelper.OodleFileName)
         : Avx2.IsSupported && Bmi2.X64.IsSupported;
 
