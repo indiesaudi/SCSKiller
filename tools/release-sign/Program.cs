@@ -155,7 +155,7 @@ static string ChannelOf(string feed, string? channel)
 {
     channel ??= Regex.Match(Path.GetFileName(feed), @"^releases\.([a-z]+(?:-linux(?:-arm64)?)?)\.json$").Groups[1].Value;
     return UpdateChannels.All.Any(c => channel == c || channel == c + "-linux" || channel == c + "-linux-arm64") ? channel
-        : throw new ArgumentException($"no channel: name the feed releases.<channel>.json , releases.<channel>-linux.json or releases.<channel>-linux-arm64.json, or pass --channel"
+        : throw new ArgumentException($"no channel: name the feed releases.<channel>.json, releases.<channel>-linux.json or releases.<channel>-linux-arm64.json, or pass --channel"
             + $" {string.Join('|', UpdateChannels.All)} (with -linux or -linux-arm64 for a Linux feed)");
 }
 
