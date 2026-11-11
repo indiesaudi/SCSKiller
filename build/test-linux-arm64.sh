@@ -105,6 +105,7 @@ echo "dotnet \$(dotnet --version), \$(uname -m)"
 mkdir /w && cd /repo && tar --null -T /repo/$rel/files.txt -cf - | tar -xf - -C /w
 cd /w && git init -q && git -c user.email=t@t -c user.name=t commit -q --allow-empty -m test
 export MSBUILDDISABLENODEREUSE=1 DOTNET_CLI_USE_MSBUILD_SERVER=0 SCSK_ARCH=aarch64
+bash -n build/device-check-linux.sh   # the device's bash, not the build machine's (macOS has bash 3.2)
 echo "== package"
 bash build/publish-linux.sh --windows "$windows_in" --sums "$sums_in" --linux-native /repo/$rel/layer --version $version 2>&1 |
     grep -vE ': warning |^\s+(Determining|Restored|All projects)' || exit 1

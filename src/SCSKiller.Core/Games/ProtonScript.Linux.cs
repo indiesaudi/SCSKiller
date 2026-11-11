@@ -29,6 +29,15 @@ sealed partial class ProtonScript
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return null; }
     }
 
+    /// <summary>What a compile reads of this Proton without a prefix: its default prefix as the script's branch for this
+    /// machine names it (with whether it's there), whether that is the ARM64 branch, and the first prefix_info line a
+    /// compile's run couldn't compute (null: none), for tools/arm64-checks.</summary>
+    internal (string? DefaultPrefix, bool Exists, bool Arm64, string? Unknown) Check(string version, string steam)
+    {
+        var pfx = ProtonPath("default_pfx_dir");
+        return (pfx, pfx != null && Directory.Exists(pfx), Arm64At() != null, PrefixInfo(version, steam, out var unknown) == null ? unknown : null);
+    }
+
     /// <summary>The script reads the environment variable: it names it in quotes. Valve's Proton names PROTON_USE_WINED3D but
     /// not PROTON_ADD_CONFIG, GE-Proton both.</summary>
     public bool Reads(string variable) =>
