@@ -302,7 +302,6 @@ sealed partial class ProtonScript
             || !Directory.Exists(Path.Combine(_proton, "files", "bin-arm64"))) return null;
         var set = Regex.Match(_text, @"^([ \t]+)self\.host_pe_arch[ \t]*=[ \t]*[""']aarch64-windows[""']", RegexOptions.Multiline);
         if (!set.Success) return null;
-        var head = _text.LastIndexOf("\n", set.Index, StringComparison.Ordinal);
         var cond = Regex.Matches(_text[..set.Index], @"^[ \t]*if\b[^\n]*PROTON_USE_ARM64", RegexOptions.Multiline).LastOrDefault();
         if (cond == null) return null;
         // the block: the lines after the if indented as deep as the aarch64 assignment
@@ -313,7 +312,7 @@ sealed partial class ProtonScript
             if (line.Value.Trim().Length > 0 && !line.Value.StartsWith(indent, StringComparison.Ordinal)) break;
             end = set.Index + line.Index + line.Length;
         }
-        return head < 0 ? null : (cond.Index, end);
+        return (cond.Index, end);
     }
 
     /// <summary>migrate_user_paths's moves: the winxp-style path, the vista one and the link that replaces the first.</summary>
