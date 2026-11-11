@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The arm64 Linux build's own checks (build/test-linux-arm64.sh, and on the device build/device-check-linux.sh):
+       the update feed's OS and package names, and the arm64 codecs loading for real. Not part of any package. -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\SCSKiller.Core\SCSKiller.Core.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>arm64-checks</AssemblyName>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

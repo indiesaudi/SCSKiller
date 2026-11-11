@@ -37,10 +37,13 @@ public static class LaunchGpu
 
     static IEnumerable<(string Name, string Value)> Own(Game g, string steamRoot)
     {
+        var id = SteamSource.AppId(g.Id) ?? SteamShortcuts.AppId(g.Id);
         var options = SteamSource.AppId(g.Id) is { } app ? SteamSource.LaunchOptions(steamRoot, app)
             : SteamShortcuts.AppId(g.Id) is { } shortcut ? SteamShortcuts.Find(steamRoot, shortcut)?.LaunchOptions : null;
-        return options != null ? SteamLaunchOptions.Variables(options, out _)
-            : LauncherPrefix.Is(g) && LauncherPrefix.Of(g, out _) is { Env: { } env } ? env : [];
+        if (options == null) return LauncherPrefix.Is(g) && LauncherPrefix.Of(g, out _) is { Env: { } env } ? env : [];
+        var own = SteamLaunchOptions.Variables(options, out _);
+        // Armada's wrapper sets the game's Turnip build itself (its tweaks' env applies over the options' variables)
+        return ArmadaLaunch.Wraps(options) && id is { } appId ? [.. own, .. ArmadaLaunch.Variables(appId, own)] : own;
     }
 
     /// <summary>The adapter of <paramref name="all"/> the variables run the game on; null when they pick none (the game takes
@@ -125,6 +128,8 @@ public static class LaunchGpu
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { manifests = [path]; }
         foreach (var m in manifests)
         {
+            // the loader skips a manifest that isn't there (Armada lists the FEX guest's x86 Turnip manifests on the host too)
+            if (!File.Exists(m)) continue;
             string? library = null;
             try
             {
@@ -137,6 +142,7 @@ public static class LaunchGpu
                 var f when f.StartsWith("libvulkan_radeon", StringComparison.Ordinal) => MesaLinux.Radv,
                 var f when f.StartsWith("libvulkan_intel", StringComparison.Ordinal) => MesaLinux.Anv,
                 var f when f.StartsWith("libvulkan_nouveau", StringComparison.Ordinal) => MesaLinux.Nvk,
+                var f when f.StartsWith("libvulkan_freedreno", StringComparison.Ordinal) => MesaLinux.Turnip,
                 var f when f.StartsWith("libvulkan_lvp", StringComparison.Ordinal) => MesaLinux.Llvmpipe,
                 var f when f.StartsWith("libGLX_nvidia", StringComparison.Ordinal) || f.StartsWith("libnvidia-vulkan", StringComparison.Ordinal) => MesaLinux.NvidiaProprietary,
                 var f when f.StartsWith("amdvlk", StringComparison.Ordinal) => MesaLinux.AmdOpenSource,
