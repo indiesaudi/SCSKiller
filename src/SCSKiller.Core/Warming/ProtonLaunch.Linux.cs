@@ -149,36 +149,52 @@ static class ProtonLaunch
         return env;
     }
 
-    /// <summary>The display variables a graphical session gives the systemd user manager, for a warm started without one (the
-    /// idle and driver-update compiles' timer, a compile over SSH): Wine with no display can deadlock at its start (Proton 11's
-    /// win32u: its Vulkan init loads the display driver, whose GPU list waits on that same init, measured on ARM64 Proton),
-    /// and the game always runs with the session's. Added only on arm64 (where the deadlock was measured; elsewhere the warm
-    /// keeps the environment it had), when <paramref name="env"/> has neither DISPLAY nor WAYLAND_DISPLAY, and only what the
-    /// session names; nothing without a graphical session.</summary>
+    /// <summary>The display variables of the graphical session, for a warm started without one (the idle and driver-update
+    /// compiles' timer, a compile over SSH): Wine with no display can deadlock at its start (Proton 11's win32u: its Vulkan
+    /// init loads the display driver, whose GPU list waits on that same init, measured on ARM64 Proton), and the game always
+    /// runs with the session's. Taken from the systemd user manager, where a desktop session puts them, else from
+    /// gamescope's $XDG_RUNTIME_DIR/gamescope-environment (gamescope-session-plus, a handheld's game mode, puts none in the
+    /// manager), read at each warm: the session can change between them. Added only on arm64 (where the deadlock was
+    /// measured; elsewhere the warm keeps the environment it had), when <paramref name="env"/> has neither DISPLAY nor
+    /// WAYLAND_DISPLAY, and only what the session names; nothing without a graphical session.</summary>
     internal static void WithSessionDisplay(Dictionary<string, string> env)
     {
         if (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture != System.Runtime.InteropServices.Architecture.Arm64) return;
         if (env.ContainsKey("DISPLAY") || env.ContainsKey("WAYLAND_DISPLAY")) return;
-        foreach (var (k, v) in SessionDisplay.Value)
+        foreach (var (k, v) in SessionDisplay(env.GetValueOrDefault("XDG_RUNTIME_DIR")))
             if (k is "DISPLAY" or "WAYLAND_DISPLAY" or "XAUTHORITY" or "XDG_SESSION_TYPE" || !env.ContainsKey(k)) env[k] = v;
     }
 
-    static readonly Lazy<List<(string Name, string Value)>> SessionDisplay = new(() =>
+    static readonly string[] DisplayNames = ["DISPLAY", "WAYLAND_DISPLAY", "XAUTHORITY", "XDG_SESSION_TYPE", "XDG_RUNTIME_DIR"];
+
+    static List<(string Name, string Value)> SessionDisplay(string? runtimeDir)
     {
+        static Dictionary<string, string> Parse(string text) => text.Split('\n').Select(l => l.Trim().Split('=', 2)).Where(kv => kv.Length == 2 && kv[0].Length > 0)
+            .GroupBy(kv => kv[0]).ToDictionary(g => g.Key, g => g.Last()[1], StringComparer.Ordinal);
+        static bool Shows(Dictionary<string, string> v) => v.GetValueOrDefault("DISPLAY") is { Length: > 0 } || v.GetValueOrDefault("WAYLAND_DISPLAY") is { Length: > 0 };
         try
         {
             using var p = Process.Start(new ProcessStartInfo("systemctl", ["--user", "show-environment"])
                 { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false });
-            if (p == null) return [];
-            var read = p.StandardOutput.ReadToEndAsync();
-            if (!p.WaitForExit(3000) || p.ExitCode != 0) { try { p.Kill(); } catch (InvalidOperationException) { } return []; }
-            var all = read.Result.Split('\n').Select(l => l.Split('=', 2)).Where(kv => kv.Length == 2).ToDictionary(kv => kv[0], kv => kv[1], StringComparer.Ordinal);
-            if (!all.ContainsKey("DISPLAY") && !all.ContainsKey("WAYLAND_DISPLAY")) return [];
-            return [.. new[] { "DISPLAY", "WAYLAND_DISPLAY", "XAUTHORITY", "XDG_SESSION_TYPE", "XDG_RUNTIME_DIR" }
-                .Where(all.ContainsKey).Select(k => (k, all[k]))];
+            if (p != null)
+            {
+                var read = p.StandardOutput.ReadToEndAsync();
+                if (!p.WaitForExit(3000)) { try { p.Kill(); } catch (InvalidOperationException) { } }
+                else if (p.ExitCode == 0 && Parse(read.Result) is var manager && Shows(manager))
+                    return [.. DisplayNames.Where(manager.ContainsKey).Select(k => (k, manager[k]))];
+            }
         }
-        catch (Exception e) when (e is System.ComponentModel.Win32Exception or IOException or InvalidOperationException) { return []; }
-    });
+        catch (Exception e) when (e is System.ComponentModel.Win32Exception or IOException or InvalidOperationException) { }
+        try
+        {
+            var dir = runtimeDir is { Length: > 0 } r ? r : $"/run/user/{App.Libc.UserId}";
+            var file = Path.Combine(dir, "gamescope-environment");
+            if (File.Exists(file) && Parse(File.ReadAllText(file)) is var gamescope && Shows(gamescope))
+                return [.. DisplayNames.Where(gamescope.ContainsKey).Select(k => (k, gamescope[k])), ("XDG_RUNTIME_DIR", dir)];
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        return [];
+    }
 
     /// <summary>A Wine warm's environment, in a launcher's prefix <paramref name="prefix"/> (<see cref="LauncherPrefix"/>):
     /// <paramref name="inherited"/> without what <see cref="Dropped"/> names or another prefix's, then WINEPREFIX, the prefix's
