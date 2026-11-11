@@ -130,6 +130,7 @@ static class ProtonLaunch
         var env = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var (k, v) in inherited)
             if (!Dropped(k)) env[k] = v;
+        WithSessionDisplay(env);
         env["DXVK_LOG_PATH"] = "none";
         env["DXVK_LOG_LEVEL"] = "info";   // Proton's default is none: the devices DXVK found or skipped reach the launcher's output
         env["PROTON_LOG_DIR"] = work;   // PROTON_LOG writes to the home folder otherwise
@@ -148,6 +149,35 @@ static class ProtonLaunch
         return env;
     }
 
+    /// <summary>The display variables a graphical session gives the systemd user manager, for a warm started without one (the
+    /// idle and driver-update compiles' timer, a compile over SSH): Wine with no display can deadlock at its start (Proton 11's
+    /// win32u: its Vulkan init loads the display driver, whose GPU list waits on that same init, measured on ARM64 Proton),
+    /// and the game always runs with the session's. Added only when <paramref name="env"/> has neither DISPLAY nor
+    /// WAYLAND_DISPLAY, and only what the session names; nothing without a graphical session.</summary>
+    internal static void WithSessionDisplay(Dictionary<string, string> env)
+    {
+        if (env.ContainsKey("DISPLAY") || env.ContainsKey("WAYLAND_DISPLAY")) return;
+        foreach (var (k, v) in SessionDisplay.Value)
+            if (k is "DISPLAY" or "WAYLAND_DISPLAY" or "XAUTHORITY" or "XDG_SESSION_TYPE" || !env.ContainsKey(k)) env[k] = v;
+    }
+
+    static readonly Lazy<List<(string Name, string Value)>> SessionDisplay = new(() =>
+    {
+        try
+        {
+            using var p = Process.Start(new ProcessStartInfo("systemctl", ["--user", "show-environment"])
+                { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false });
+            if (p == null) return [];
+            var read = p.StandardOutput.ReadToEndAsync();
+            if (!p.WaitForExit(3000) || p.ExitCode != 0) { try { p.Kill(); } catch (InvalidOperationException) { } return []; }
+            var all = read.Result.Split('\n').Select(l => l.Split('=', 2)).Where(kv => kv.Length == 2).ToDictionary(kv => kv[0], kv => kv[1], StringComparer.Ordinal);
+            if (!all.ContainsKey("DISPLAY") && !all.ContainsKey("WAYLAND_DISPLAY")) return [];
+            return [.. new[] { "DISPLAY", "WAYLAND_DISPLAY", "XAUTHORITY", "XDG_SESSION_TYPE", "XDG_RUNTIME_DIR" }
+                .Where(all.ContainsKey).Select(k => (k, all[k]))];
+        }
+        catch (Exception e) when (e is System.ComponentModel.Win32Exception or IOException or InvalidOperationException) { return []; }
+    });
+
     /// <summary>A Wine warm's environment, in a launcher's prefix <paramref name="prefix"/> (<see cref="LauncherPrefix"/>):
     /// <paramref name="inherited"/> without what <see cref="Dropped"/> names or another prefix's, then WINEPREFIX, the prefix's
     /// vkd3d-proton as d3d12 (native first, as Proton and Lutris set it), the warm's cache variables, the picked GPU by name,
@@ -158,6 +188,7 @@ static class ProtonLaunch
         var env = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var (k, v) in inherited)
             if (!Dropped(k) && k is not ("WINEPREFIX" or "WINEARCH" or "WINELOADER" or "WINESERVER" or "WINEDEBUG")) env[k] = v;
+        WithSessionDisplay(env);
         env["DXVK_LOG_PATH"] = "none";
         env["DXVK_LOG_LEVEL"] = "info";   // Proton's default is none: the devices DXVK found or skipped reach the launcher's output
         env["WINEDEBUG"] = "-all";
