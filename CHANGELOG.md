@@ -4,6 +4,19 @@ All notable changes to the SCSKiller app and command line. Versions follow [Sema
 
 ## [Unreleased]
 
+**New on Linux**
+
+- A native arm64 (aarch64) build, `SCSKiller-aarch64.AppImage`, for arm64 Linux PCs and handhelds.
+- Qualcomm Adreno GPUs compile through Mesa's Turnip driver on arm64, as AMD GPUs do through RADV. Turnip support is
+  experimental: its cache behaviour isn't measured yet.
+- On arm64, games on ARM64 Proton (Valve's, Proton-CachyOS and GE-Proton's aarch64 builds) compile, and a compile that
+  starts without a display, such as the one after a driver update, no longer hangs at Wine's start.
+- On Armada, a game compiles for the Turnip build Armada picks for it, and a new build of that driver makes its compile
+  stale.
+- Microsoft Store PC games installed with Xodus Nexus (Nexus Launcher) are listed and compile in their Xodus prefix, on
+  AMD, Intel and Qualcomm graphics. A game started from Xodus's Steam shortcut while Xodus isn't running uses Steam's
+  cache instead, which this compile doesn't fill yet.
+
 ## [1.4.8] - 2026-11-15
 
 **New on Windows**
