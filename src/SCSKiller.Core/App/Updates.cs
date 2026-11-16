@@ -629,12 +629,12 @@ public sealed class FeedRejectedException(string message) : Exception(message);
 /// verifies with a pinned key, its hash matches, and it isn't older than the newest one accepted for that channel.</summary>
 public sealed class FeedTrust(AppStore store, IReadOnlyDictionary<string, string> keys)
 {
-    /// <summary>The release public keys (kid -> base64 raw Ed25519 key), generated offline by the maintainer
-    /// (tools/release-sign keygen): rel-a signs, rel-b is the backup.</summary>
+    /// <summary>The release public keys (kid -> base64 raw Ed25519 key), this fork's (indiesaudi/SCSKiller): rel-a signs the
+    /// feeds in release.yml (build/sign-feed.sh, the FEED_KEY_REL_A secret), rel-b is the backup, kept offline.</summary>
     public static readonly IReadOnlyDictionary<string, string> ReleaseKeys = new Dictionary<string, string>
     {
-        ["rel-a"] = "sitj5K2fcZku26c/EvUo793SeSuVIb0YcN+6/mi0CwM=",
-        ["rel-b"] = "OBpxPkqkWZJIx6p89z8R4cEp52aMRcmeZQVHZQEZ0ns=",
+        ["rel-a"] = "ursX8lBHldkouoqIDNG6K0ox/qTmI9wsk1U3ktJB9t0=",
+        ["rel-b"] = "enAR6x8CbioJcrtwxWqq0sAN29ajAl/MmOpE42Nz9e4=",
     };
 
     static readonly SignatureAlgorithm Ed = SignatureAlgorithm.Ed25519;

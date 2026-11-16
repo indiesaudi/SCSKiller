@@ -80,8 +80,8 @@ e00a21a24fadca9de8d5066dadda65cb61741abe764ea29080993e5f1e46aac3 SCSKiller.Core.
 5a6416ecf9f02c48969cc23727404729e0841adb794cedc312b19d8c50dcbf59 SCSKiller.Core.dll SCSKiller.Core.App.ContentTrust::.cctor
 8d06a921fb4bac311124394dd2977c90fabcaed68f213527b41ba57c06be300e SCSKiller.Core.dll SCSKiller.Core.App.ContentTrust::.cctor
 cb03fd5306c9389c760e6bb44581a5eefcf20eb2b09ccb1475976f349aa1d416 SCSKiller.Core.dll SCSKiller.Core.App.Dxvk9::Extract
-4fbc44d50bae377a2aa312a23b4e32753c74763df8e7c7f6bb6a223939064bd0 SCSKiller.Core.dll SCSKiller.Core.App.FeedTrust::.cctor
-93c100b369a8cbf2dee11aef10c89fd12348f5ef5ec0fc5ca9c29e25cf9ad218 SCSKiller.Core.dll SCSKiller.Core.App.FeedTrust::.cctor
+dd8f0bc9803a06fa8b8f878cf2c6715756aea1ff928e0c4b5dc64006b884aa54 SCSKiller.Core.dll SCSKiller.Core.App.FeedTrust::.cctor
+5223f5f2dcbc0f8c8397fad052c6744f5e1bc62b169fb11e57aece2556f20cec SCSKiller.Core.dll SCSKiller.Core.App.FeedTrust::.cctor
 9228a19b7b632c5d8078266c8fb8af5fef694cf9445556d36c92c99c2d78a602 SCSKiller.Core.dll SCSKiller.Core.Games.GameFiles::.cctor
 64e2db03e78097df383b155b86fd11076401d895ba18b34567d4354a486131cd SCSKiller.Core.dll SCSKiller.Core.FromSoft.SoulsKeys pinned SHA-256 of UXM ArchiveKeys.cs at 9501be87 (a hash of a whole public source file, not reversible to a key)
 07a038125f283208b91cde6ceea12cd2e3af1b2e8946fdf3710b6207130f7385 SCSKiller.Core.dll SCSKiller.Core.ReEngine.ReEngineReader pinned SHA-256 of ree-pak-rs pak.rs at 25562e6a (a hash of a whole public source file, not reversible to a key)
