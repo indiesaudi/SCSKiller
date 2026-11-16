@@ -24,7 +24,7 @@ case ${SCSK_ARCH:-$(uname -m)} in
     *) die "no Linux package for ${SCSK_ARCH:-$(uname -m)} (SCSK_ARCH: x86_64 or aarch64)" ;;
 esac
 codecs=(); [[ $arch != x86_64 ]] || codecs=(libz-ng.so)   # zlib-ng is pinned for x86-64 alone
-id=com.BlueHeisenberg.SCSKiller
+id=com.indiesaudi.SCSKiller
 # the replayer's fault injection, which only a 0.0.0-internal build compiles in; the release step reads this line too
 replay_hooks=(SCSKILLER_REPLAY_CRASH SCSKILLER_REPLAY_HANG SCSKILLER_REPLAY_WAIT)
 

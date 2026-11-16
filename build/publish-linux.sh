@@ -13,8 +13,8 @@
 #                             scskiller_warm with the fossilize-replay it runs. The app copies the layer and the warm into
 #                             its data folder and uses those copies: a game's Steam Runtime container sees neither the
 #                             AppImage's mount nor a Flatpak's /app
-#   share/applications/com.BlueHeisenberg.SCSKiller.desktop     Exec is the package's to fill in (@EXEC@)
-#   share/icons/hicolor/{256x256,512x512}/apps/com.BlueHeisenberg.SCSKiller.png
+#   share/applications/com.indiesaudi.SCSKiller.desktop     Exec is the package's to fill in (@EXEC@)
+#   share/icons/hicolor/{256x256,512x512}/apps/com.indiesaudi.SCSKiller.png
 #   LICENSE, LICENSE-EXCEPTION.txt, THIRD-PARTY-NOTICES.md, notices/{dotnet,SkiaSharp,HarfBuzzSharp}-THIRD-PARTY-NOTICES.txt
 #
 # --version X.Y.Z[-pre] (a leading v is dropped) stamps both executables, as build/publish.ps1 -Version does, and must be
@@ -323,7 +323,7 @@ for p in SkiaSharp HarfBuzzSharp; do
 done
 
 # 6. menu entry and icons (the 512 is the 256 scaled up: the icon has no larger source)
-id=com.BlueHeisenberg.SCSKiller
+id=com.indiesaudi.SCSKiller
 mkdir -p "$out/share/applications" "$out/share/icons/hicolor/256x256/apps" "$out/share/icons/hicolor/512x512/apps"
 # StartupWMClass: Avalonia's X11 WM_CLASS is the entry assembly's name
 cat >"$out/share/applications/$id.desktop" <<EOF
