@@ -1,0 +1,36 @@
+# Throwaway: builds this branch's Windows package for a local test install. Not part of any PR.
+name: dev-build
+
+on:
+  push:
+    branches: ['build/**']
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2025
+    timeout-minutes: 90
+    env:
+      DOTNET_NOLOGO: 'true'
+      DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68   # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Publish
+        shell: powershell
+        run: ./build/publish.ps1 -NoOodle -NoZip -Version 0.1.1-internal.0
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a   # v7.0.1
+        with:
+          name: SCSKiller-dev
+          path: dist/SCSKiller/
+          retention-days: 3
+          if-no-files-found: error
