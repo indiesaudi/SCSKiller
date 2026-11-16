@@ -1,3 +1,4 @@
+# indiesaudi/SCSKiller: a stable tag here is signed (Sign the Linux feeds) and published, not left as a draft.
 # A version tag builds, tests and packages exactly like build.yml, then creates a DRAFT GitHub Release with the
 # UNSIGNED zip, SHA256SUMS-unsigned.txt, the Linux release (build.yml's vpk pack: in the private repo's runner, in the
 # artifact with the zip, in the public repo its linux job's SCSKiller-linux, and its linux-arm64 job's
@@ -34,7 +35,9 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
         with:
-          sparse-checkout: CHANGELOG.md
+          sparse-checkout: |
+            CHANGELOG.md
+            build/sign-feed.sh
           sparse-checkout-cone-mode: false
 
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c   # v8.0.1
@@ -70,6 +73,17 @@ jobs:
             release-linux-arm64/SCSKiller-aarch64.AppImage
             release-linux-arm64/*-linux-arm64-full.nupkg
 
+      # This fork (indiesaudi/SCSKiller) signs its Linux feeds here, with its own rel-a key (FeedTrust.ReleaseKeys),
+      # and publishes: the app's stable updates read releases/latest of this repo.
+      - name: Sign the Linux feeds
+        if: ${{ !github.event.repository.private }}
+        env:
+          FEED_KEY: ${{ secrets.FEED_KEY_REL_A }}
+        run: |
+          [ -n "$FEED_KEY" ] || { echo "::error::no FEED_KEY_REL_A secret: the feeds can't be signed"; exit 1; }
+          bash build/sign-feed.sh release-linux/releases.stable-linux.json stable-linux rel-a
+          if [ -d release-linux-arm64 ]; then bash build/sign-feed.sh release-linux-arm64/releases.stable-linux-arm64.json stable-linux-arm64 rel-a; fi
+
       - name: Release notes from CHANGELOG.md
         env:
           TAG: ${{ github.ref_name }}
@@ -79,7 +93,7 @@ jobs:
           awk -v v="$v" '/^## /{ p = index($0, "[" v "]") > 0; next } p' CHANGELOG.md > notes.md
           [ -s notes.md ] || { echo "::error::CHANGELOG.md has no '## [$v]' section"; exit 1; }
 
-      - name: Draft release (not published)
+      - name: Release, published (a stable tag becomes the latest release)
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
@@ -87,5 +101,5 @@ jobs:
         run: |
           pre=(); [[ "$TAG" == *-* ]] && pre=(--prerelease)
           arm=(); [ -d release-linux-arm64 ] && arm=(release-linux-arm64/*)
-          gh release create "$TAG" SCSKiller.zip SHA256SUMS-unsigned.txt release-linux/* "${arm[@]}" --draft --verify-tag "${pre[@]}" \
+          gh release create "$TAG" SCSKiller.zip SHA256SUMS-unsigned.txt release-linux/* "${arm[@]}" --verify-tag "${pre[@]}" \
             --title "SCSKiller $TAG" --notes-file notes.md
