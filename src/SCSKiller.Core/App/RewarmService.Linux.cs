@@ -12,7 +12,7 @@ namespace SCSKiller.Core.App;
 /// changed or removed.</summary>
 public static class RewarmService
 {
-    public const string Name = "scskiller-rewarm", Service = Name + ".service", Timer = Name + ".timer";
+    public const string Name = "scskiller-indiesaudi-rewarm", Service = Name + ".service", Timer = Name + ".timer";
     /// <summary>The app's argument that runs the CLI beside it in its place, and that CLI's file name.</summary>
     public const string CliArg = "--cli", Cli = "scskiller";
     const string OwnKey = "X-SCSKiller", Command = "rewarm-stale --if-driver-changed";

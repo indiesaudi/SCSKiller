@@ -10,7 +10,7 @@ namespace SCSKiller.Core.App;
 /// never changed, and the Hidden and NoDisplay a menu editor sets are kept.</summary>
 public static class MenuEntry
 {
-    public const string AppId = "com.BlueHeisenberg.SCSKiller", FileName = AppId + ".desktop";
+    public const string AppId = "com.indiesaudi.SCSKiller", FileName = AppId + ".desktop";
     // the key that makes an entry ours: a menu editor keeps the keys it doesn't know
     const string OwnKey = "X-SCSKiller-AppImage", Placeholder = "Exec=@EXEC@";
     static readonly string[] UsersKeys = ["Hidden", "NoDisplay"];
