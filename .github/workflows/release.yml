@@ -102,4 +102,4 @@ jobs:
           pre=(); [[ "$TAG" == *-* ]] && pre=(--prerelease)
           arm=(); [ -d release-linux-arm64 ] && arm=(release-linux-arm64/*)
           gh release create "$TAG" SCSKiller.zip SHA256SUMS-unsigned.txt release-linux/* "${arm[@]}" --verify-tag "${pre[@]}" \
-            --title "SCSKiller $TAG" --notes-file notes.md
+            --title "SCSKiller-Armada $TAG" --notes-file notes.md
