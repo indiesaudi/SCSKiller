@@ -6,8 +6,9 @@ using SCSKiller.Core.App;
 // The arm64 Linux build's checks. Usage: arm64-checks [--feed releases.<c>-linux-arm64.json] [--no-network]
 //   or arm64-checks --armada <appid>...: the variables Armada's armada-game-launch adds for each Steam app (ArmadaLaunch), only
 //   or arm64-checks --proton <Proton folder>...: each Proton read as a compile reads it (ProtonScript.Check); exit code: failures
-//   or arm64-checks --turnip <appid | driver manifest>...: the Turnip build a Steam app's own driver files pick (its launch
-//      options with Armada's wrapper), or a manifest's, and its identity (path|size|time|hash) as its compiles are recorded for
+//   or arm64-checks --turnip <appid | xodus:<id> | driver manifest>...: the Turnip build a Steam app's own driver files pick
+//      (its launch options with Armada's wrapper), an Xodus Nexus game's (the Steam shortcut it starts from), or a manifest's,
+//      and its identity (path|size|time|hash) as its compiles are recorded for
 //   feeds   UpdateChannels / UpdateFeeds: the arm64 build follows its own -linux-arm64 feeds and takes only its own packages
 //   codecs  Codecs: the arm64 Oodle build is pinned, downloaded and loaded (dlopen against this machine's glibc); no zlib-ng
 // Set SCSKILLER_DATA_DIR to a scratch folder: the codecs are downloaded into its codecs/ folder.
@@ -48,6 +49,13 @@ if (turnips != null)
             var options = SCSKiller.Core.Games.SteamSource.LaunchOptions(root, app);
             var own = SCSKiller.Core.Games.SteamLaunchOptions.Variables(options, out _);
             vars = SCSKiller.Core.Games.ArmadaLaunch.Wraps(options) ? [.. own, .. SCSKiller.Core.Games.ArmadaLaunch.Variables(app, own)] : own;
+        }
+        else if (SCSKiller.Core.Games.XodusSource.Is(t))
+        {
+            // an Xodus Nexus game ("xodus:<its id>"): its launch options in the launcher over the Steam shortcut it starts from
+            var shortcut = SCSKiller.Core.Games.XodusSource.Shortcut(t, root);
+            Console.WriteLine($"{t}: started from {(shortcut == null ? "no Steam shortcut" : $"Steam shortcut {shortcut.AppId} ({shortcut.Name})")}");
+            vars = SCSKiller.Core.Vendors.LaunchGpu.Of(new SCSKiller.Core.Game(t, t, SCSKiller.Core.Store.Other, "/", "/game.exe", null), root);
         }
         else vars = [("VK_DRIVER_FILES", t)];
         var lib = SCSKiller.Core.Vendors.LaunchGpu.TurnipLibrary(vars);

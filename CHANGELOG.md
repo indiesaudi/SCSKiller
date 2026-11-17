@@ -4,6 +4,14 @@ All notable changes to the SCSKiller app and command line. Versions follow [Sema
 
 ## [Unreleased]
 
+**New on Linux**
+
+- On Armada, an Xodus Nexus game compiles for the Turnip build of the Steam shortcut it is started from (the game's own
+  shortcut, else Xodus Nexus's), as Steam games already do. Before, it compiled on the system's Turnip, which a game
+  started from Steam in Gaming Mode doesn't read.
+- With Nexus Launcher 0.5.1 or later, a game started from Xodus's Steam shortcut uses its Xodus prefix's cache too, so
+  the compile reaches every way of starting it.
+
 **New on Windows**
 
 - Resident Evil Requiem and Onimusha: Way of the Sword close themselves while the recorder is in their folder, so it no

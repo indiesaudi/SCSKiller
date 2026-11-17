@@ -59,6 +59,25 @@ public sealed class XodusSource(string? config = null, string? steamRoot = null)
         catch (Exception x) when (x is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException) { return null; }
     }
 
+    /// <summary>The Steam shortcut a game of the launcher is started from in Steam: the one the launcher's "Add to Steam" made
+    /// for the game, which runs its launch-game script with the game's id (as the shortcut's exe or in its launch options),
+    /// else the launcher's own, which runs its launch-nexus script (the game is then started with Play inside it). The game
+    /// inherits that shortcut's environment through the launcher, so what a wrapper in its launch options sets (Armada's
+    /// Turnip build, <see cref="ArmadaLaunch"/>) is the game's too. Null: neither is there.</summary>
+    public static SteamShortcut? Shortcut(string gameId, string steamRoot, string? config = null)
+    {
+        if (!Is(gameId)) return null;
+        config ??= Config();
+        var id = gameId[IdPrefix.Length..];
+        string game = Path.Combine(config, "shortcuts", "launch-game"), launcher = Path.Combine(config, "shortcuts", "launch-nexus");
+        var word = new Regex($"(?<![A-Za-z0-9_-]){Regex.Escape(id)}(?![A-Za-z0-9_-])");
+        List<SteamShortcut> all;
+        try { all = SteamShortcuts.All(steamRoot); }
+        catch (Exception x) when (x is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException) { return null; }
+        bool Runs(SteamShortcut s, string script) => s.Exe.Contains(script, StringComparison.Ordinal) || s.LaunchOptions.Contains(script, StringComparison.Ordinal);
+        return all.FirstOrDefault(s => Runs(s, game) && word.IsMatch(s.LaunchOptions)) ?? all.FirstOrDefault(s => Runs(s, launcher));
+    }
+
     /// <summary>The game at its folder and the exe its package names (its MicrosoftGame.config's, as the launcher's state
     /// gives it), not resolved as an exe the user picks is (<see cref="ManualSource.Resolve"/>): a Microsoft Store package
     /// keeps its exes encrypted on disk, and the launcher runs a decrypted copy from a launch view it makes at each start

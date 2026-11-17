@@ -27,7 +27,8 @@ public static class LaunchGpu
     public static bool Is(string name) => name is "MESA_VK_DEVICE_SELECT" or "DRI_PRIME" or "VK_DRIVER_FILES" or "VK_ICD_FILENAMES";
 
     /// <summary>The game's own GPU variables: a Steam game's or a non-Steam game's from its launch options in
-    /// <paramref name="steamRoot"/>, a launcher's game's from the launcher's settings; none for any other game.</summary>
+    /// <paramref name="steamRoot"/>, a launcher's game's from the launcher's settings (an Xodus Nexus game's with those of
+    /// the Steam shortcut it is started from, <see cref="XodusSource.Shortcut"/>); none for any other game.</summary>
     public static List<(string Name, string Value)> Of(Game g, string steamRoot) => [.. Own(g, steamRoot).Where(v => Is(v.Name))];
 
     /// <summary>The game's own VKD3D_CONFIG, read where <see cref="Of"/> reads; null: none. Its options change the driver
@@ -40,7 +41,19 @@ public static class LaunchGpu
         var id = SteamSource.AppId(g.Id) ?? SteamShortcuts.AppId(g.Id);
         var options = SteamSource.AppId(g.Id) is { } app ? SteamSource.LaunchOptions(steamRoot, app)
             : SteamShortcuts.AppId(g.Id) is { } shortcut ? SteamShortcuts.Find(steamRoot, shortcut)?.LaunchOptions : null;
-        if (options == null) return LauncherPrefix.Is(g) && LauncherPrefix.Of(g, out _) is { Env: { } env } ? env : [];
+        if (options == null)
+        {
+            IReadOnlyList<(string Name, string Value)> env = LauncherPrefix.Is(g) && LauncherPrefix.Of(g, out _) is { Env: { } e } ? e : [];
+            // an Xodus Nexus game started from Steam inherits its shortcut's environment through the launcher: the variables
+            // of the shortcut's launch options, then what Armada's wrapper adds for that shortcut (its Turnip build); the
+            // game's own launch options in the launcher are applied last, so they win
+            if (XodusSource.Is(g.Id) && XodusSource.Shortcut(g.Id, steamRoot) is { } started && ArmadaLaunch.Wraps(started.LaunchOptions))
+            {
+                var steam = SteamLaunchOptions.Variables(started.LaunchOptions, out _);
+                return [.. steam, .. ArmadaLaunch.Variables(started.AppId, steam), .. env];
+            }
+            return env;
+        }
         var own = SteamLaunchOptions.Variables(options, out _);
         // Armada's wrapper sets the game's Turnip build itself (its tweaks' env applies over the options' variables)
         return ArmadaLaunch.Wraps(options) && id is { } appId ? [.. own, .. ArmadaLaunch.Variables(appId, own)] : own;
