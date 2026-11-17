@@ -4,24 +4,7 @@ All notable changes to the SCSKiller app and command line. Versions follow [Sema
 
 ## [Unreleased]
 
-**New on Linux**
-
-- On Armada, an Xodus Nexus game compiles for the Turnip build of the Steam shortcut it is started from (the game's own
-  shortcut, else Xodus Nexus's), as Steam games already do. Before, it compiled on the system's Turnip, which a game
-  started from Steam in Gaming Mode doesn't read.
-- With Nexus Launcher 0.5.1 or later, a game started from Xodus's Steam shortcut uses its Xodus prefix's cache too, so
-  the compile reaches every way of starting it.
-
-**New on Windows**
-
-- Resident Evil Requiem and Onimusha: Way of the Sword close themselves while the recorder is in their folder, so it no
-  longer goes there. `scskiller record session <game>` starts the game with the recorder loaded from outside its folder
-  and records until it exits, and `scskiller record always <game> on` makes every Steam launch do that through a launch
-  option.
-- Their game pages have "Start the game and record" for one session, and a "Record every Steam launch" switch that adds
-  the launch option to Steam for you or copies it for you to paste.
-
-## [0.1.0] - 2026-11-16
+## [0.1.1] - 2026-11-16
 
 The first release of this fork (indiesaudi/SCSKiller), built from upstream SCSKiller 1.4.8. It has its own version
 numbers and installs beside upstream's app: its own menu entry, data folder and updates, which come from this
@@ -40,6 +23,20 @@ repository's releases.
 - Microsoft Store PC games installed with Xodus Nexus (Nexus Launcher) are listed and compile in their Xodus prefix, on
   AMD, Intel and Qualcomm graphics. A game started from Xodus's Steam shortcut while Xodus isn't running uses Steam's
   cache instead, which this compile doesn't fill yet.
+- On Armada, an Xodus Nexus game compiles for the Turnip build of the Steam shortcut it is started from (the game's own
+  shortcut, else Xodus Nexus's), as Steam games already do. Before, it compiled on the system's Turnip, which a game
+  started from Steam in Gaming Mode doesn't read.
+- With Nexus Launcher 0.5.1 or later, a game started from Xodus's Steam shortcut uses its Xodus prefix's cache too, so
+  the compile reaches every way of starting it.
+
+**New on Windows**
+
+- Resident Evil Requiem and Onimusha: Way of the Sword close themselves while the recorder is in their folder, so it no
+  longer goes there. `scskiller record session <game>` starts the game with the recorder loaded from outside its folder
+  and records until it exits, and `scskiller record always <game> on` makes every Steam launch do that through a launch
+  option.
+- Their game pages have "Start the game and record" for one session, and a "Record every Steam launch" switch that adds
+  the launch option to Steam for you or copies it for you to paste.
 
 **Note**
 
