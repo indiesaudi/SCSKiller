@@ -4,6 +4,8 @@ All notable changes to the SCSKiller app and command line. Versions follow [Sema
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-11-16
+
 **Changed**
 
 - Requests to the services this fork shares with upstream SCSKiller (sign-in, the community shader database, shared
