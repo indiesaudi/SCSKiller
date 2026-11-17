@@ -362,7 +362,7 @@ public sealed class AppStore(string dataDir)
     public const string MovedRefusal = "Not available while the data folder is moved.";
 
     static readonly Lazy<string> _defaultDir = new(() =>
-        Resolve(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SCSKiller-indiesaudi"), PortableRoot(AppContext.BaseDirectory), out _onOldFolder));
+        Resolve(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SCSKiller-Armada"), PortableRoot(AppContext.BaseDirectory), out _onOldFolder));
 
     static IDisposable? _onOldFolder;   // held for the process's life (Resolve)
 

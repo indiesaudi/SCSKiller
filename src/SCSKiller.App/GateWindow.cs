@@ -22,7 +22,7 @@ sealed class GateWindow : Window
     public GateWindow(Account account, string dataDir, Action opened)
     {
         (this.account, this.dataDir, this.opened) = (account, dataDir, opened);
-        Title = "SCSKiller";
+        Title = "SCSKiller-Armada";
         AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "app.ico"));
         double scale = GetDpiForWindow(WinRT.Interop.WindowNative.GetWindowHandle(this)) / 96.0;
         AppWindow.Resize(new SizeInt32((int)(520 * scale), (int)(300 * scale)));

@@ -52,7 +52,7 @@ public static class LinuxStartup
         $"""
         [Desktop Entry]
         Type=Application
-        Name=SCSKiller
+        Name=SCSKiller-Armada
         Comment=Compiles your games' shaders into your GPU driver's cache before you play
         Exec={MenuEntry.ExecArg(program)} {WindowsStartup.TrayArg}
         TryExec={program}

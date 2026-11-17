@@ -67,7 +67,7 @@
                         <StackPanel Orientation="Horizontal" Spacing="16" Margin="0,4,0,0">
                             <HyperlinkButton Content="What's new" Classes="Link" Click="OnWhatsNew" />
                             <HyperlinkButton Content="Website" Classes="Link" NavigateUri="https://scskiller.com" />
-                            <HyperlinkButton Content="Source code" Classes="Link" NavigateUri="https://github.com/indiesaudi/SCSKiller" />
+                            <HyperlinkButton Content="Source code" Classes="Link" NavigateUri="https://github.com/indiesaudi/SCSKiller-Armada" />
                             <HyperlinkButton Content="Support on Patreon" Classes="Link" NavigateUri="https://www.patreon.com/SCSKiller" />
                         </StackPanel>
                     </StackPanel>

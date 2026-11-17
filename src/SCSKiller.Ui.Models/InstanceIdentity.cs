@@ -14,7 +14,7 @@ namespace SCSKiller.Ui.Models;
 /// <param name="Folder">The data folder's own name, the same for every exe and identity on it.</param>
 public sealed record InstanceIdentity(string Key, string? Aumid, bool GameFolders, string Folder)
 {
-    public const string ProductionKey = "SCSKiller-indiesaudi";
+    public const string ProductionKey = "SCSKiller-Armada";
     /// <summary>The argument Windows starts the exe with when a toast is clicked while no instance is registered.</summary>
     public const string ToastRelaunchArg = "----AppNotificationActivated:";
     /// <summary>A test identity's toast argument naming its <see cref="Folder"/>: a click that reaches another identity, its

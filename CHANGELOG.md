@@ -6,9 +6,9 @@ All notable changes to the SCSKiller app and command line. Versions follow [Sema
 
 ## [0.1.1] - 2026-11-16
 
-The first release of this fork (indiesaudi/SCSKiller), built from upstream SCSKiller 1.4.8. It has its own version
-numbers and installs beside upstream's app: its own menu entry, data folder and updates, which come from this
-repository's releases.
+The first release of SCSKiller-Armada (indiesaudi/SCSKiller-Armada), a fork built from upstream SCSKiller 1.4.8. It has
+its own version numbers and installs beside upstream's app: its own menu entry, data folder and updates, which come
+from this repository's releases.
 
 **New on Linux**
 

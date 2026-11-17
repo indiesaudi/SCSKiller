@@ -16,7 +16,7 @@ For what SCSKiller is, how it works and how to use it, see the
 
 ## Builds
 
-Builds of this fork come from this repository's [Releases](https://github.com/indiesaudi/SCSKiller/releases) page. It
+Builds of this fork come from this repository's [Releases](https://github.com/indiesaudi/SCSKiller-Armada/releases) page. It
 installs beside upstream's app, with its own data folder and updates. The Windows zip is unsigned and doesn't update
 itself.
 
@@ -24,7 +24,7 @@ These builds, their bugs and their behaviour are this fork's responsibility, not
 
 ## Issues
 
-Please open an [issue here](https://github.com/indiesaudi/SCSKiller/issues) only for what this fork adds: arm64 Linux,
+Please open an [issue here](https://github.com/indiesaudi/SCSKiller-Armada/issues) only for what this fork adds: arm64 Linux,
 Xodus Nexus, and the RE Engine games (Resident Evil Requiem and Onimusha: Way of the Sword). Everything else belongs
 with the [upstream project](https://github.com/BlueHeisenberg/SCSKiller/issues).
 

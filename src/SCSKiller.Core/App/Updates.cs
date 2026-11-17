@@ -317,7 +317,7 @@ public static class AutoInstall
 /// strands every installed build's stable updates.</summary>
 public static class UpdateFeeds
 {
-    public const string GhRepo = "indiesaudi/SCSKiller";
+    public const string GhRepo = "indiesaudi/SCSKiller-Armada";
     public static readonly Uri Packages = new("https://dl.scskiller.io/");   // alpha/beta/internal packages: VPS route only
     /// <summary>The app's background check; the Library's refresh and About's "Check for updates" check in between.</summary>
     public static readonly TimeSpan CheckEvery = TimeSpan.FromHours(1);
@@ -629,7 +629,7 @@ public sealed class FeedRejectedException(string message) : Exception(message);
 /// verifies with a pinned key, its hash matches, and it isn't older than the newest one accepted for that channel.</summary>
 public sealed class FeedTrust(AppStore store, IReadOnlyDictionary<string, string> keys)
 {
-    /// <summary>The release public keys (kid -> base64 raw Ed25519 key), this fork's (indiesaudi/SCSKiller): rel-a signs the
+    /// <summary>The release public keys (kid -> base64 raw Ed25519 key), this fork's (indiesaudi/SCSKiller-Armada): rel-a signs the
     /// feeds in release.yml (build/sign-feed.sh, the FEED_KEY_REL_A secret), rel-b is the backup, kept offline.</summary>
     public static readonly IReadOnlyDictionary<string, string> ReleaseKeys = new Dictionary<string, string>
     {

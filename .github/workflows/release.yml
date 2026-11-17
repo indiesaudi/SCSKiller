@@ -1,4 +1,4 @@
-# indiesaudi/SCSKiller: a stable tag here is signed (Sign the Linux feeds) and published, not left as a draft.
+# indiesaudi/SCSKiller-Armada: a stable tag here is signed (Sign the Linux feeds) and published, not left as a draft.
 # A version tag builds, tests and packages exactly like build.yml, then creates a DRAFT GitHub Release with the
 # UNSIGNED zip, SHA256SUMS-unsigned.txt, the Linux release (build.yml's vpk pack: in the private repo's runner, in the
 # artifact with the zip, in the public repo its linux job's SCSKiller-linux, and its linux-arm64 job's
@@ -73,7 +73,7 @@ jobs:
             release-linux-arm64/SCSKiller-aarch64.AppImage
             release-linux-arm64/*-linux-arm64-full.nupkg
 
-      # This fork (indiesaudi/SCSKiller) signs its Linux feeds here, with its own rel-a key (FeedTrust.ReleaseKeys),
+      # This fork (indiesaudi/SCSKiller-Armada) signs its Linux feeds here, with its own rel-a key (FeedTrust.ReleaseKeys),
       # and publishes: the app's stable updates read releases/latest of this repo.
       - name: Sign the Linux feeds
         if: ${{ !github.event.repository.private }}

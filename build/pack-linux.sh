@@ -4,7 +4,7 @@
 # are checked against SHA256SUMS-linux.txt. Writes into --out, which must be new or empty:
 #   SCSKiller-x86_64.AppImage                            vpk's AppImage, under one name for every version (stable's
 #                                                        releases/latest/download link), its .desktop fixed (step 4)
-#   SCSKiller.Indiesaudi-<version>-<channel>-linux-full.nupkg   the update package
+#   SCSKiller.Armada-<version>-<channel>-linux-full.nupkg   the update package
 #   releases.<channel>-linux.json                        its feed: vpk channel <channel>-linux, the Linux client's
 #   SHA256SUMS-linux.txt                                 the three files' SHA-256, sha256sum format
 # The arm64 package (SCSK_ARCH=aarch64, default this machine's CPU) has its own names, so both go into one release:
@@ -55,8 +55,8 @@ appimage=SCSKiller-$arch.AppImage
 command -v python3 >/dev/null || die "python3 is needed"
 command -v "$vpk" >/dev/null || die "no vpk ($vpk): dotnet tool install -g vpk --version 1.2.158, or --vpk <path>"
 for t in mksquashfs unsquashfs; do command -v $t >/dev/null || die "no $t (squashfs-tools): vpk and the .desktop fix need it"; done
-icon=$dir/share/icons/hicolor/256x256/apps/com.indiesaudi.SCSKiller.png
-desktop=$dir/share/applications/com.indiesaudi.SCSKiller.desktop
+icon=$dir/share/icons/hicolor/256x256/apps/com.indiesaudi.SCSKillerArmada.png
+desktop=$dir/share/applications/com.indiesaudi.SCSKillerArmada.desktop
 [[ -x $dir/SCSKiller.Ui && -x $dir/scskiller && -f $icon && -f $desktop ]] ||
     die "$dir isn't a package folder (SCSKiller.Ui, scskiller, the icon, the .desktop file)"
 tmp=$(mktemp -d)
@@ -69,13 +69,13 @@ label=${BASH_REMATCH[2]}
 [[ -z $version || ${version#v} == "$own" ]] || die "the package is version $own, not ${version#v}"
 channel=${label:-stable}
 [[ $channel =~ ^(stable|beta|alpha|internal)$ ]] || die "pre-release label '$label' isn't a channel (beta, alpha, internal)"
-pkg=SCSKiller.Indiesaudi-$own-$channel-$os-full.nupkg
+pkg=SCSKiller.Armada-$own-$channel-$os-full.nupkg
 feed=releases.$channel-$os.json
 echo "version $own, channel $channel-$os, $rid"
 
 # 2. vpk, into a folder of its own: it lists every package it finds in its output folder in the feed
-"$vpk" --skip-updates pack --packId SCSKiller.Indiesaudi --packVersion "$own" --packDir "$dir" --mainExe SCSKiller.Ui \
-    --packTitle SCSKiller --packAuthors "The SCSKiller authors" --channel "$channel-$os" --runtime "$rid" \
+"$vpk" --skip-updates pack --packId SCSKiller.Armada --packVersion "$own" --packDir "$dir" --mainExe SCSKiller.Ui \
+    --packTitle SCSKiller-Armada --packAuthors "The SCSKiller authors" --channel "$channel-$os" --runtime "$rid" \
     --outputDir "$tmp/vpk" --icon "$icon"
 
 # 3. what vpk wrote: one AppImage, the package, and a feed that lists exactly that package as built
@@ -94,7 +94,7 @@ except (ValueError, KeyError, TypeError): sys.exit(f'pack-linux: {os.path.basena
 if not isinstance(assets, list) or len(assets) != 1 or not isinstance(assets[0], dict):
     sys.exit(f'pack-linux: {os.path.basename(feed)} must list {name} alone')
 a = assets[0]
-want = {'PackageId': 'SCSKiller.Indiesaudi', 'Version': version, 'FileName': name, 'SHA256': hashlib.sha256(data).hexdigest(), 'Size': len(data)}
+want = {'PackageId': 'SCSKiller.Armada', 'Version': version, 'FileName': name, 'SHA256': hashlib.sha256(data).hexdigest(), 'Size': len(data)}
 got = {k: str(a.get(k)).lower() if k == 'SHA256' else a.get(k) for k in want}
 if got != want or a.get('Type') not in ('Full', 1):
     sys.exit(f'pack-linux: {os.path.basename(feed)} lists {name} otherwise than vpk built it')
