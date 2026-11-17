@@ -1,6 +1,6 @@
-# SCSKiller (indiesaudi fork)
+# SCSKiller-Armada
 
-This is an unofficial fork of [SCSKiller](https://github.com/BlueHeisenberg/SCSKiller), the Shader Compilation Stutter
+SCSKiller-Armada is an unofficial fork of [SCSKiller](https://github.com/BlueHeisenberg/SCSKiller), the Shader Compilation Stutter
 Killer. It is based on SCSKiller and is not affiliated with or endorsed by the upstream project.
 
 The fork focuses on support that upstream doesn't have yet:
@@ -20,8 +20,13 @@ Builds of this fork come from this repository's [Releases](https://github.com/in
 installs beside upstream's app, with its own data folder and updates. The Windows zip is unsigned and doesn't update
 itself.
 
-These builds, their bugs and their behaviour are this fork's responsibility, not upstream's. Please report problems
-with them here, not to the upstream project.
+These builds, their bugs and their behaviour are this fork's responsibility, not upstream's.
+
+## Issues
+
+Please open an [issue here](https://github.com/indiesaudi/SCSKiller/issues) only for what this fork adds: arm64 Linux,
+Xodus Nexus, and the RE Engine games (Resident Evil Requiem and Onimusha: Way of the Sword). Everything else belongs
+with the [upstream project](https://github.com/BlueHeisenberg/SCSKiller/issues).
 
 ## Licence
 
