@@ -15,8 +15,8 @@ public sealed class RouteFailover : DelegatingHandler
     /// <summary>Process-wide, so every client shares which route works (sign-in, community DB, beta updates).</summary>
     public static readonly RouteFailover Default = new();
 
-    /// <summary>The User-Agent's product; the CLI sets SCSKiller-CLI before its first request.</summary>
-    public static string Product { get; set; } = "SCSKiller";
+    /// <summary>The User-Agent's product: this fork's name, so the servers it shares with upstream can tell its requests and uploads from upstream's. The CLI sets SCSKiller-Armada-CLI before its first request.</summary>
+    public static string Product { get; set; } = "SCSKiller-Armada";
 
     /// <summary>The User-Agent of every request through this handler, any host. Names the build, nothing that identifies the user or the PC.</summary>
     public static string UserAgent(string product, AppVersion v, int windowsBuild) => $"{product}/{v} ({v.Channel}; Windows {windowsBuild})";

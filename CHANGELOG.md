@@ -4,6 +4,11 @@ All notable changes to the SCSKiller app and command line. Versions follow [Sema
 
 ## [Unreleased]
 
+**Changed**
+
+- Requests to the services this fork shares with upstream SCSKiller (sign-in, the community shader database, shared
+  recordings, diagnostics and the daily check) now say they come from SCSKiller-Armada, in their User-Agent.
+
 ## [0.1.1] - 2026-11-16
 
 The first release of SCSKiller-Armada (indiesaudi/SCSKiller-Armada), a fork built from upstream SCSKiller 1.4.8. It has
